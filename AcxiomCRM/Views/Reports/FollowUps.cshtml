@@ -1,0 +1,83 @@
+@model List<AcxiomCRM.Models.FollowUp>
+@{
+    ViewData["Title"] = "Follow-Up Report";
+    var filter = (AcxiomCRM.ViewModels.ReportFilterVM)ViewBag.Filter;
+}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div class="d-flex align-items-center">
+        <a asp-action="Index" class="btn btn-sm btn-outline-secondary me-3"><i class="bi bi-arrow-left"></i></a>
+        <div>
+            <h2 class="fw-bold mb-0">Follow-Up Compliance Report</h2>
+            <p class="text-muted small mb-0">Generated on @DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm") UTC</p>
+        </div>
+    </div>
+    <div>
+        <button onclick="window.print()" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-printer me-1"></i> Print / Save PDF
+        </button>
+    </div>
+</div>
+
+<div class="card mb-4 no-print">
+    <div class="card-body p-3">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <input type="date" name="StartDate" value="@(filter.StartDate?.ToString("yyyy-MM-dd"))" class="form-control form-control-sm" placeholder="From Date" />
+            </div>
+            <div class="col-md-4">
+                <input type="date" name="EndDate" value="@(filter.EndDate?.ToString("yyyy-MM-dd"))" class="form-control form-control-sm" placeholder="To Date" />
+            </div>
+            <div class="col-md-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-sm flex-grow-1">Apply Date Filter</button>
+                <a asp-action="FollowUps" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-counterclockwise"></i></a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <span class="fw-bold">Follow-Ups Dataset (@Model.Count items)</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Date & Time</th>
+                        <th>Type</th>
+                        <th>Subject</th>
+                        <th>Related Entity</th>
+                        <th>Status</th>
+                        <th>Assignee</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        @foreach (var f in Model)
+                        {
+                            <tr>
+                                <td class="small">@f.FollowUpDate.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td><span class="badge bg-light text-dark border">@f.FollowUpType</span></td>
+                                <td class="fw-bold">@f.Subject</td>
+                                <td>@(f.Customer?.CustomerName ?? f.Lead?.LeadName ?? f.Opportunity?.OpportunityName ?? "-")</td>
+                                <td><span class="badge @(f.Status == FollowUpStatus.Completed ? "bg-success-subtle text-success" : f.Status == FollowUpStatus.Planned ? "bg-warning-subtle text-warning" : "bg-secondary-subtle text-secondary")">@f.Status</span></td>
+                                <td>@(f.AssignedToUser?.FullName ?? "Unassigned")</td>
+                                <td class="small text-muted">@f.Remarks</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">No follow-ups recorded for the specified period.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

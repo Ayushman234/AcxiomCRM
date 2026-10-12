@@ -1,0 +1,91 @@
+@model List<AcxiomCRM.Models.AuditLog>
+@{
+    ViewData["Title"] = "Security Audit Logs";
+    var filter = (AcxiomCRM.ViewModels.AuditFilterVM)ViewBag.Filter;
+}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div class="d-flex align-items-center">
+        <a asp-action="Index" class="btn btn-sm btn-outline-secondary me-3"><i class="bi bi-arrow-left"></i></a>
+        <div>
+            <h2 class="fw-bold mb-0">System Security Audit Trail</h2>
+            <p class="text-muted small mb-0">Tamper-evident logs of user activities, data mutations, logins, and permission changes</p>
+        </div>
+    </div>
+    <div>
+        <button onclick="window.print()" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-printer me-1"></i> Print / Save PDF
+        </button>
+    </div>
+</div>
+
+<div class="card mb-4 no-print">
+    <div class="card-body p-3">
+        <form method="get" class="row g-2 align-items-center">
+            <div class="col-md-3">
+                <input type="text" name="EntityName" value="@filter?.EntityName" class="form-control form-control-sm" placeholder="Entity (e.g. Customer, User)..." />
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="Action" value="@filter?.Action" class="form-control form-control-sm" placeholder="Action (e.g. Create, Update)..." />
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="FromDate" value="@(filter?.FromDate?.ToString("yyyy-MM-dd"))" class="form-control form-control-sm" placeholder="From Date" />
+            </div>
+            <div class="col-md-2">
+                <input type="date" name="ToDate" value="@(filter?.ToDate?.ToString("yyyy-MM-dd"))" class="form-control form-control-sm" placeholder="To Date" />
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-sm flex-grow-1">Filter</button>
+                <a asp-action="Audit" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-counterclockwise"></i></a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <span class="fw-bold">Audit Event Stream (@Model.Count entries)</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 font-monospace" style="font-size: 0.825rem;">
+                <thead>
+                    <tr>
+                        <th>Timestamp (UTC)</th>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>Entity</th>
+                        <th>Old Value</th>
+                        <th>New Value</th>
+                        <th>IP Address</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        @foreach (var log in Model)
+                        {
+                            <tr>
+                                <td class="text-nowrap">@log.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                <td class="fw-semibold">@log.UserName</td>
+                                <td><span class="badge bg-secondary-subtle text-secondary font-monospace">@log.Action</span></td>
+                                <td>@log.EntityName #@log.RecordId</td>
+                                <td class="text-truncate" style="max-width: 150px;" title="@log.OldValue">@(string.IsNullOrEmpty(log.OldValue) ? "-" : log.OldValue)</td>
+                                <td class="text-truncate" style="max-width: 150px;" title="@log.NewValue">@(string.IsNullOrEmpty(log.NewValue) ? "-" : log.NewValue)</td>
+                                <td>@(string.IsNullOrEmpty(log.IpAddress) ? "-" : log.IpAddress)</td>
+                                <td class="text-truncate" style="max-width: 200px;" title="@log.Details">@log.Details</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8" class="text-center py-5 text-muted">No audit logs matching filter.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

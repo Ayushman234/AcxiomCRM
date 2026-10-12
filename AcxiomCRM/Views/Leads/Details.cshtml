@@ -1,0 +1,141 @@
+@model AcxiomCRM.Models.Lead
+@{
+    ViewData["Title"] = $"Lead - {Model.LeadName}";
+}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div class="d-flex align-items-center">
+        <a asp-action="Index" class="btn btn-sm btn-outline-secondary me-3"><i class="bi bi-arrow-left"></i></a>
+        <div>
+            <h2 class="fw-bold mb-0">@Model.LeadName</h2>
+            <span class="badge @(Model.Status == LeadStatus.Converted ? "badge-status-converted" : Model.Status == LeadStatus.Qualified ? "badge-status-qualified" : Model.Status == LeadStatus.Contacted ? "badge-status-contacted" : Model.Status == LeadStatus.Lost ? "badge-status-lost" : "badge-status-new") me-2">
+                @Model.Status
+            </span>
+            <span class="badge @(Model.Priority == LeadPriority.High ? "bg-danger-subtle text-danger" : Model.Priority == LeadPriority.Medium ? "bg-warning-subtle text-warning" : "bg-info-subtle text-info")">
+                @Model.Priority Priority
+            </span>
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.LeadId" class="btn btn-primary btn-sm">
+            <i class="bi bi-pencil me-1"></i> Edit Lead
+        </a>
+        @if (Model.Status == LeadStatus.Qualified)
+        {
+            <form asp-action="Convert" asp-route-id="@Model.LeadId" method="post" class="d-inline" onsubmit="return confirm('Convert this qualified lead to a Customer account?');">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-success btn-sm">
+                    <i class="bi bi-check-circle-fill me-1"></i> Convert to Customer
+                </button>
+            </form>
+        }
+        <a asp-controller="FollowUps" asp-action="Create" asp-route-leadId="@Model.LeadId" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-calendar-plus me-1"></i> Add Follow-up
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header bg-white">
+                <span class="fw-bold">Lead Information</span>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="text-muted small text-uppercase fw-semibold d-block">Company</label>
+                    <span class="fw-medium">@(string.IsNullOrEmpty(Model.CompanyName) ? "Individual" : Model.CompanyName)</span>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small text-uppercase fw-semibold d-block">Email</label>
+                    <a href="mailto:@Model.Email" class="text-decoration-none">@Model.Email</a>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small text-uppercase fw-semibold d-block">Phone</label>
+                    <span>@Model.Phone</span>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small text-uppercase fw-semibold d-block">Lead Source</label>
+                    <span class="badge bg-light text-dark border">@Model.Source</span>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small text-uppercase fw-semibold d-block">Expected Deal Value</label>
+                    <span class="fw-bold text-success fs-5">@Model.ExpectedValue.ToString("C")</span>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small text-uppercase fw-semibold d-block">Assigned Representative</label>
+                    <span class="badge bg-primary-subtle text-primary">@(Model.AssignedToUser != null ? Model.AssignedToUser.FullName : "Unassigned")</span>
+                </div>
+                @if (Model.CustomerId.HasValue)
+                {
+                    <div class="alert alert-success mt-3 p-2 small">
+                        <i class="bi bi-check-circle me-1"></i> Converted Customer ID:
+                        <a asp-controller="Customers" asp-action="Details" asp-route-id="@Model.CustomerId.Value" class="fw-bold text-decoration-none">
+                            #@Model.CustomerId.Value &rarr;
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.Notes))
+        {
+            <div class="card">
+                <div class="card-header bg-white">
+                    <span class="fw-bold">Prospect Notes</span>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-0 small" style="white-space: pre-wrap;">@Model.Notes</p>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="col-lg-8">
+        <!-- Scheduled Follow-Ups -->
+        <div class="card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <span class="fw-bold">Follow-Up History & Schedule (@(Model.FollowUps?.Count ?? 0))</span>
+                <a asp-controller="FollowUps" asp-action="Create" asp-route-leadId="@Model.LeadId" class="btn btn-sm btn-link text-decoration-none">Schedule New</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.FollowUps != null && Model.FollowUps.Any())
+                            {
+                                @foreach (var f in Model.FollowUps)
+                                {
+                                    <tr>
+                                        <td class="small">@f.FollowUpDate.ToString("yyyy-MM-dd HH:mm")</td>
+                                        <td><span class="badge bg-secondary-subtle text-secondary">@f.FollowUpType</span></td>
+                                        <td>
+                                            <span class="badge @(f.Status == FollowUpStatus.Completed ? "bg-success-subtle text-success" : f.Status == FollowUpStatus.Planned ? "bg-warning-subtle text-warning" : "bg-danger-subtle text-danger")">
+                                                @f.Status
+                                            </span>
+                                        </td>
+                                        <td class="small text-muted">@f.Remarks</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted small">No follow-ups recorded yet.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

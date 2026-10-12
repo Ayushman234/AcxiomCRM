@@ -1,0 +1,115 @@
+@{
+    ViewData["Title"] = "Reports & Business Intelligence";
+}
+
+<div class="mb-4">
+    <h2 class="fw-bold mb-1">Reports & Business Intelligence</h2>
+    <p class="text-muted mb-0 small">Exportable enterprise summaries, funnel metrics, and audit trails</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6 col-xl-4">
+        <div class="card h-100">
+            <div class="card-body p-4 d-flex flex-column">
+                <div class="stat-icon-wrapper stat-icon-primary mb-3">
+                    <i class="bi bi-file-earmark-spreadsheet"></i>
+                </div>
+                <h5 class="fw-bold">Customer Account Report</h5>
+                <p class="text-muted small flex-grow-1">
+                    Export and analyze customer accounts, territory distribution, and engagement statuses.
+                </p>
+                <a asp-action="Customers" class="btn btn-outline-primary btn-sm mt-3">
+                    View Report &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-xl-4">
+        <div class="card h-100">
+            <div class="card-body p-4 d-flex flex-column">
+                <div class="stat-icon-wrapper stat-icon-info mb-3">
+                    <i class="bi bi-funnel"></i>
+                </div>
+                <h5 class="fw-bold">Lead Acquisition Report</h5>
+                <p class="text-muted small flex-grow-1">
+                    Evaluate lead generation channels, conversion rates, qualification performance, and velocity.
+                </p>
+                <a asp-action="Leads" class="btn btn-outline-info btn-sm mt-3">
+                    View Report &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-xl-4">
+        <div class="card h-100">
+            <div class="card-body p-4 d-flex flex-column">
+                <div class="stat-icon-wrapper stat-icon-success mb-3">
+                    <i class="bi bi-cash-stack"></i>
+                </div>
+                <h5 class="fw-bold">Opportunity Pipeline Report</h5>
+                <p class="text-muted small flex-grow-1">
+                    Track expected close amounts, probability-weighted deal pipelines, and win-loss ratios.
+                </p>
+                <a asp-action="Opportunities" class="btn btn-outline-success btn-sm mt-3">
+                    View Report &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-xl-4">
+        <div class="card h-100">
+            <div class="card-body p-4 d-flex flex-column">
+                <div class="stat-icon-wrapper stat-icon-warning mb-3">
+                    <i class="bi bi-calendar-check"></i>
+                </div>
+                <h5 class="fw-bold">Follow-Up SLA Report</h5>
+                <p class="text-muted small flex-grow-1">
+                    Review communication compliance, overdue follow-ups, and sales team response times.
+                </p>
+                <a asp-action="FollowUps" class="btn btn-outline-warning btn-sm mt-3">
+                    View Report &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-xl-4">
+        <div class="card h-100">
+            <div class="card-body p-4 d-flex flex-column">
+                <div class="stat-icon-wrapper stat-icon-primary mb-3">
+                    <i class="bi bi-diagram-3"></i>
+                </div>
+                <h5 class="fw-bold">Pipeline Stage Breakdown</h5>
+                <p class="text-muted small flex-grow-1">
+                    Aggregate view of opportunities grouped by stage with deal count and volume summaries.
+                </p>
+                <a asp-action="Pipeline" class="btn btn-outline-primary btn-sm mt-3">
+                    View Report &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+
+    @if (User.IsInRole(AppRoles.Admin))
+    {
+        <div class="col-md-6 col-xl-4">
+            <div class="card h-100">
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="stat-icon-wrapper stat-icon-danger mb-3">
+                        <i class="bi bi-shield-lock"></i>
+                    </div>
+                    <h5 class="fw-bold">Security Audit Trail</h5>
+                    <p class="text-muted small flex-grow-1">
+                        Compliance and security access logs, role alterations, data mutations, and logins.
+                    </p>
+                    <a asp-action="AuditLogs" class="btn btn-outline-danger btn-sm mt-3">
+                        View Audit Log &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

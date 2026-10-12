@@ -1,0 +1,64 @@
+@model List<AcxiomCRM.ViewModels.PipelineReportItem>
+@{
+    ViewData["Title"] = "Pipeline Stage Breakdown";
+    decimal grandTotal = Model.Sum(x => x.TotalAmount);
+    decimal weightedTotal = Model.Sum(x => x.WeightedAmount);
+    int totalDeals = Model.Sum(x => x.Count);
+}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div class="d-flex align-items-center">
+        <a asp-action="Index" class="btn btn-sm btn-outline-secondary me-3"><i class="bi bi-arrow-left"></i></a>
+        <div>
+            <h2 class="fw-bold mb-0">Pipeline Stage Breakdown</h2>
+            <p class="text-muted small mb-0">Total Deals: <strong>@totalDeals</strong> | Value: <strong>@grandTotal.ToString("C0")</strong> | Weighted: <strong>@weightedTotal.ToString("C0")</strong></p>
+        </div>
+    </div>
+    <div>
+        <button onclick="window.print()" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-printer me-1"></i> Print / Save PDF
+        </button>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <span class="fw-bold">Stage Summary Table</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Stage</th>
+                        <th>Owner</th>
+                        <th>Deal Count</th>
+                        <th>Nominal Amount</th>
+                        <th>Weighted Forecast</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td><span class="badge bg-primary-subtle text-primary">@item.Stage</span></td>
+                                <td class="fw-semibold">@(string.IsNullOrWhiteSpace(item.Owner) ? "Unassigned" : item.Owner)</td>
+                                <td>@item.Count</td>
+                                <td class="fw-bold text-dark">@item.TotalAmount.ToString("C0")</td>
+                                <td class="fw-bold text-success">@item.WeightedAmount.ToString("C0")</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">No open opportunities found in pipeline.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

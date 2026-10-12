@@ -1,0 +1,65 @@
+@model AcxiomCRM.ViewModels.EditUserVM
+@{
+    ViewData["Title"] = "Edit User";
+    var roles = (string[])ViewBag.Roles;
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header bg-white py-3">
+                <div class="d-flex align-items-center">
+                    <a asp-action="Index" class="btn btn-sm btn-outline-secondary me-3"><i class="bi bi-arrow-left"></i></a>
+                    <h5 class="card-title mb-0 fw-bold">Edit User Account: @Model.Email</h5>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Edit" asp-route-id="@Model.Id" method="post" novalidate>
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="Email" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger small mb-3"></div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="FirstName" class="form-label fw-semibold small text-muted"></label>
+                            <input asp-for="FirstName" class="form-control" />
+                            <span asp-validation-for="FirstName" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="LastName" class="form-label fw-semibold small text-muted"></label>
+                            <input asp-for="LastName" class="form-control" />
+                            <span asp-validation-for="LastName" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-muted">Email (Username)</label>
+                        <input value="@Model.Email" class="form-control bg-light" disabled />
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Role" class="form-label fw-semibold small text-muted"></label>
+                        <select asp-for="Role" class="form-select">
+                            @foreach (var r in roles)
+                            {
+                                <option value="@r" selected="@(r == Model.Role)">@r</option>
+                            }
+                        </select>
+                        <span asp-validation-for="Role" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-check mb-4">
+                        <input asp-for="IsActive" class="form-check-input" />
+                        <label asp-for="IsActive" class="form-check-label small fw-semibold text-muted">Account is active</label>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save me-1"></i> Update User</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

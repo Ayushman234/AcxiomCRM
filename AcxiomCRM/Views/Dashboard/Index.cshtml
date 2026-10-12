@@ -1,0 +1,235 @@
+@model AcxiomCRM.ViewModels.DashboardVM
+@{
+    ViewData["Title"] = "Executive Dashboard";
+}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div>
+        <h2 class="fw-bold mb-1">Executive Dashboard</h2>
+        <p class="text-muted mb-0 small">Real-time pipeline performance, lead progression, and activity metrics</p>
+    </div>
+    <div class="d-flex gap-2">
+        <form method="get" class="d-flex gap-2">
+            <select name="dateFilter" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="today" selected="@(Model.DateFilter == "today")">Today</option>
+                <option value="week" selected="@(Model.DateFilter == "week")">This Week</option>
+                <option value="month" selected="@(Model.DateFilter == "month")">This Month</option>
+                <option value="all" selected="@(Model.DateFilter == "all")">All Time</option>
+            </select>
+        </form>
+        <a asp-controller="Leads" asp-action="Create" class="btn btn-primary btn-sm d-flex align-items-center">
+            <i class="bi bi-plus-lg me-1"></i> New Lead
+        </a>
+    </div>
+</div>
+
+<!-- KPI Summary Cards Row -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="stat-label">Pipeline Value</div>
+                    <div class="stat-value text-primary mt-1">@Model.TotalPipelineValue.ToString("C0")</div>
+                    <div class="text-muted small mt-1">@Model.OpenOpportunities active deals</div>
+                </div>
+                <div class="stat-icon-wrapper stat-icon-primary">
+                    <i class="bi bi-cash-coin"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="stat-label">Total Leads</div>
+                    <div class="stat-value mt-1">@Model.TotalLeads</div>
+                    <div class="text-success small mt-1"><i class="bi bi-arrow-up-right me-1"></i>@Model.OpenLeads open prospects</div>
+                </div>
+                <div class="stat-icon-wrapper stat-icon-info">
+                    <i class="bi bi-funnel"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="stat-label">Active Customers</div>
+                    <div class="stat-value mt-1">@Model.TotalCustomers</div>
+                    <div class="text-muted small mt-1">Enterprise accounts</div>
+                </div>
+                <div class="stat-icon-wrapper stat-icon-success">
+                    <i class="bi bi-building-check"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card h-100">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="stat-label">Pending Follow-ups</div>
+                    <div class="stat-value @(Model.OverdueFollowUps > 0 ? "text-danger" : "") mt-1">@Model.PendingFollowUps</div>
+                    <div class="@(Model.OverdueFollowUps > 0 ? "text-danger fw-semibold" : "text-muted") small mt-1">
+                        @(Model.OverdueFollowUps > 0 ? $"{Model.OverdueFollowUps} overdue tasks!" : "All tasks on schedule")
+                    </div>
+                </div>
+                <div class="stat-icon-wrapper @(Model.OverdueFollowUps > 0 ? "stat-icon-danger" : "stat-icon-warning")">
+                    <i class="bi bi-bell"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Section Row -->
+<div class="row g-3 mb-4">
+    <!-- Pipeline Stage Distribution -->
+    <div class="col-lg-7">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span class="fw-bold">Opportunities by Stage</span>
+                <span class="badge bg-primary-subtle text-primary">Pipeline</span>
+            </div>
+            <div class="card-body">
+                <div style="height: 280px; position: relative;">
+                    <canvas id="oppStageChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lead Status Breakdown -->
+    <div class="col-lg-5">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span class="fw-bold">Lead Status Breakdown</span>
+                <span class="badge bg-info-subtle text-info">Funnel</span>
+            </div>
+            <div class="card-body">
+                <div style="height: 280px; position: relative;">
+                    <canvas id="leadStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Security & Business Activity Feed -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-bold">Recent System Activity</span>
+        @if (User.IsInRole(AppRoles.Admin))
+        {
+            <a asp-controller="Reports" asp-action="AuditLogs" class="text-primary text-decoration-none small fw-semibold">View All Logs &rarr;</a>
+        }
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>Entity</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.RecentActivities.Any())
+                    {
+                        @foreach (var log in Model.RecentActivities)
+                        {
+                            <tr>
+                                <td class="text-muted small">@log.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                <td>
+                                    <span class="fw-semibold small">@log.UserName</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary-subtle text-secondary">@log.Action</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">@log.EntityName #@log.RecordId</span>
+                                </td>
+                                <td class="small text-muted">@log.Details</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">No recent activities found.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Opportunities by Stage Chart
+        const oppData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.OpportunityStageAmounts));
+        const oppLabels = oppData.map(x => x.Label);
+        const oppValues = oppData.map(x => x.Value);
+
+        const ctxOpp = document.getElementById('oppStageChart');
+        if (ctxOpp) {
+            new Chart(ctxOpp, {
+                type: 'bar',
+                data: {
+                    labels: oppLabels.length ? oppLabels : ['No Data'],
+                    datasets: [{
+                        label: 'Deal Count',
+                        data: oppValues.length ? oppValues : [0],
+                        backgroundColor: '#4f46e5',
+                        borderRadius: 6,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { stepSize: 1 } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // Leads by Status Doughnut Chart
+        const leadData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.LeadStatusCounts));
+        const leadLabels = leadData.map(x => x.Label);
+        const leadValues = leadData.map(x => x.Value);
+
+        const ctxLead = document.getElementById('leadStatusChart');
+        if (ctxLead) {
+            new Chart(ctxLead, {
+                type: 'doughnut',
+                data: {
+                    labels: leadLabels.length ? leadLabels : ['No Leads'],
+                    datasets: [{
+                        data: leadValues.length ? leadValues : [1],
+                        backgroundColor: ['#38bdf8', '#fbbf24', '#818cf8', '#34d399', '#f87171']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+    });
+</script>
+}
